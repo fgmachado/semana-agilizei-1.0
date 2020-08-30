@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      # Checkout do projeto
+      - uses: actions/checkout@v2
+      
+      # Setup do Node.js
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.1
+        with:
+          node-version: ${{ matrix.node-version }}
+          
+      # Instalação das dependências
+      - run: npm install
+      
+      # Executando o cypress com as features do Cucumber
+      - run: npm run cy:run:cucumber
+      
+      # Gerar o relatório HTML do Cucumber
+      - run: npm run report:cucumber
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@3.5.9
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: cypress/reports
